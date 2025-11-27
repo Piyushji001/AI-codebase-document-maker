@@ -29,6 +29,11 @@ services:
           type: redis
           name: acd-redis
           property: connectionString
+      - key: AGENT_URL
+        fromService:
+          type: web
+          name: acd-agent
+          envVarKey: RENDER_EXTERNAL_URL
       - key: AWS_ACCESS_KEY_ID
         sync: false
       - key: AWS_SECRET_ACCESS_KEY
@@ -54,10 +59,10 @@ services:
         sync: false
     rootDir: agent
     
-  # Frontend
+  # Frontend (Static Site)
   - type: web
     name: acd-frontend
-    runtime: node
+    runtime: static
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: ./frontend/dist
     envVars:
@@ -65,7 +70,7 @@ services:
         fromService:
           type: web
           name: acd-backend
-          property: url
+          envVarKey: RENDER_EXTERNAL_URL
 
   # Redis
   - type: redis
