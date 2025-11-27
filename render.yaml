@@ -1,0 +1,74 @@
+services:
+  # Backend API
+  - type: web
+    name: acd-backend
+    runtime: python
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: acd-redis
+          property: connectionString
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+    rootDir: backend
+    
+  # Celery Worker
+  - type: worker
+    name: acd-worker
+    runtime: python
+    buildCommand: pip install -r worker/requirements.txt
+    startCommand: celery -A tasks worker --loglevel=info
+    envVars:
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: acd-redis
+          property: connectionString
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_BUCKET_NAME
+        value: your-s3-bucket-name
+      - key: S3_ENDPOINT_URL
+        value: ""
+      - key: AWS_REGION
+        value: us-east-1
+    rootDir: worker
+    
+  # AI Agent Service
+  - type: web
+    name: acd-agent
+    runtime: python
+    buildCommand: pip install -r agent/requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GOOGLE_API_KEY
+        sync: false
+    rootDir: agent
+    
+  # Frontend
+  - type: web
+    name: acd-frontend
+    runtime: node
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: ./frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: acd-backend
+          property: url
+
+  # Redis
+  - type: redis
+    name: acd-redis
+    plan: free
+    ipAllowList: []

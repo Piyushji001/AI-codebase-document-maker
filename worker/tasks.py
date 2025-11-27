@@ -10,7 +10,9 @@ from botocore.exceptions import NoCredentialsError
 
 # Configuration
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-MINIO_ENDPOINT = os.getenv("S3_ENDPOINT_URL", "http://minio:9000")
+S3_ENDPOINT = os.getenv("S3_ENDPOINT_URL", "http://minio:9000")
+# If S3_ENDPOINT is empty, boto3 will use real AWS S3
+MINIO_ENDPOINT = S3_ENDPOINT if S3_ENDPOINT else None
 MINIO_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY_ID", "minioadmin")
 MINIO_SECRET_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", "minioadmin")
 BUCKET_NAME = os.getenv("AWS_BUCKET_NAME", "codebase-docs")
@@ -82,8 +84,8 @@ def parse_codebase_task(job_id, repo_path):
 def call_ai_agent_task(job_id, file_structure):
     update_status(job_id, "generating", "AI Agent is analyzing code...")
     
-    # Call the Agent Service
-    agent_url = "http://agent:8001/analyze"
+    # Call the Agent Service - use env var for production
+    agent_url = os.getenv("AGENT_URL", "http://agent:8001") + "/analyze"
     repo_path = f"/tmp/repos/{job_id}"
     
     try:
