@@ -1,0 +1,7 @@
+celery
+redis
+gitpython
+boto3
+python-dotenv
+requests
+

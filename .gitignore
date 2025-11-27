@@ -1,0 +1,65 @@
+# Environment Variables - NEVER commit these!
+.env
+infra/.env
+**/.env.local
+**/.env.*.local
+
+# API Keys
+api_key/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+*.egg-info/
+dist/
+build/
+
+# Node / Frontend
+node_modules/
+frontend/dist/
+frontend/build/
+frontend/.next/
+frontend/.cache/
+npm-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Docker
+*.log
+docker-compose.override.yml
+
+# MinIO / Storage
+minio_data/
+generated_docs/
+
+# Temporary files
+tmp/
+*.tmp
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+.history/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# OS
+*.bak
+.env.backup
+
+# Cloned repositories (temp storage)
+/tmp/repos/

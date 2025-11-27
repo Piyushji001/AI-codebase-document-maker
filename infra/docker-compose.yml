@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: acd_backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../backend:/app
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+    networks:
+      - acd_network
+
+  worker:
+    build:
+      context: ../worker
+      dockerfile: Dockerfile
+    container_name: acd_worker
+    volumes:
+      - ../worker:/app
+      - ../backend:/backend_shared
+      - repo_data:/tmp/repos
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - C_FORCE_ROOT=true
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_BUCKET_NAME=${AWS_BUCKET_NAME}
+      - S3_ENDPOINT_URL=http://minio:9000
+    depends_on:
+      - redis
+    networks:
+      - acd_network
+
+  agent:
+    build:
+      context: ../agent
+      dockerfile: Dockerfile
+    container_name: acd_agent
+    ports:
+      - "8001:8001"
+    volumes:
+      - ../agent:/app
+      - repo_data:/tmp/repos
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    networks:
+      - acd_network
+
+  redis:
+    image: redis:alpine
+    container_name: acd_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - acd_network
+
+  minio:
+    image: minio/minio
+    container_name: acd_minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    volumes:
+      - minio_data:/data
+    networks:
+      - acd_network
+
+networks:
+  acd_network:
+    driver: bridge
+
+volumes:
+  minio_data:
+  repo_data:
