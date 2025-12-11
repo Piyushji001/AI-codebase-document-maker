@@ -36,39 +36,70 @@ This guide deploys the entire backend stack on Render's free tier by combining t
 
 ---
 
-## 🔧 Manual Deployment (If not using Blueprint)
+## 🔧 Manual Deployment (Using "New Web Service")
 
-### 1. Deploy Redis
-- **Name**: `acd-redis`
-- **Plan**: Free
-- Copy **Internal Redis URL**
+If you prefer to set up services manually instead of using the Blueprint:
+
+### 1. Deploy Redis (Prerequisite)
+1. Click **New +** -> **Redis**
+2. Name: `acd-redis`
+3. Plan: **Free**
+4. Click **Create Redis**
+5. **Copy the "Internal Redis URL"** (e.g., `redis://red-xxx:6379`) - You need this for the backend.
 
 ### 2. Deploy Backend + Worker (Web Service)
-- **Name**: `acd-backend`
-- **Root Directory**: `.` (Root)
-- **Build Command**: `pip install -r requirements.txt`
-- **Start Command**: `./start.sh`
-- **Env Vars**:
-  - `REDIS_URL`: (Internal Redis URL)
-  - `GOOGLE_API_KEY`: ...
-  - `AWS_...`: (AWS Credentials)
-  - `AGENT_URL`: (Agent Service URL - set this after deploying agent)
+1. Click **New +** -> **Web Service**
+2. Connect your repository
+3. Settings:
+   - **Name**: `acd-backend`
+   - **Root Directory**: `.` (leave blank or set to `.`)
+   - **Runtime**: **Python 3**
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `bash start.sh`
+   - **Plan**: **Free**
+4. **Environment Variables** (Click "Add Environment Variable"):
+   - `REDIS_URL`: (Paste Internal Redis URL from Step 1)
+   - `GOOGLE_API_KEY`: Your Gemini API Key
+   - `AWS_ACCESS_KEY_ID`: Your AWS Access Key
+   - `AWS_SECRET_ACCESS_KEY`: Your AWS Secret Key
+   - `AWS_BUCKET_NAME`: Your S3 Bucket Name
+   - `AWS_REGION`: `us-east-1`
+   - `AGENT_URL`: (Leave blank for now, update after deploying Agent)
+5. Click **Create Web Service**
 
-### 3. Deploy Agent (Web Service)
-- **Name**: `acd-agent`
-- **Root Directory**: `.` (Root)
-- **Build Command**: `pip install -r requirements.txt`
-- **Start Command**: `uvicorn agent.main:app --host 0.0.0.0 --port $PORT`
-- **Env Vars**:
-  - `GOOGLE_API_KEY`: ...
+### 3. Deploy AI Agent (Web Service)
+1. Click **New +** -> **Web Service**
+2. Connect your repository
+3. Settings:
+   - **Name**: `acd-agent`
+   - **Root Directory**: `.` (leave blank or set to `.`)
+   - **Runtime**: **Python 3**
+   - **Build Command**: `pip install -r requirements.txt`
+   - **Start Command**: `uvicorn agent.main:app --host 0.0.0.0 --port $PORT`
+   - **Plan**: **Free**
+4. **Environment Variables**:
+   - `GOOGLE_API_KEY`: Your Gemini API Key
+5. Click **Create Web Service**
+6. **Copy the Agent URL** (e.g., `https://acd-agent-xxx.onrender.com`)
 
-### 4. Deploy Frontend (Static Site)
-- **Name**: `acd-frontend`
-- **Root Directory**: `.` (Root)
-- **Build Command**: `npm install && npm run build`
-- **Publish Directory**: `dist`
-- **Env Vars**:
-  - `VITE_API_URL`: (Backend Service URL)
+### 4. Update Backend with Agent URL
+1. Go back to **acd-backend** dashboard
+2. Go to **Environment**
+3. Add/Update `AGENT_URL` with the URL from Step 3
+4. Save Changes (This will trigger a redeploy)
+
+### 5. Deploy Frontend (Static Site)
+1. Click **New +** -> **Static Site**
+2. Connect your repository
+3. Settings:
+   - **Name**: `acd-frontend`
+   - **Root Directory**: `.` (leave blank)
+   - **Build Command**: `npm install && npm run build`
+   - **Publish Directory**: `dist`
+   - **Plan**: **Free**
+4. **Environment Variables**:
+   - `VITE_API_URL`: (Copy URL from `acd-backend`, e.g., `https://acd-backend-xxx.onrender.com`)
+5. Click **Create Static Site**
 
 ---
 
