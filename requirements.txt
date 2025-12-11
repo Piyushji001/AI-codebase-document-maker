@@ -1,8 +1,13 @@
 fastapi
 uvicorn
+redis
+celery
+python-dotenv
+pydantic
+gitpython
+boto3
+requests
 langchain
 langchain-openai
 langchain-google-genai
 langgraph
-pydantic
-python-dotenv

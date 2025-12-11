@@ -1,11 +1,11 @@
 services:
-  # Backend API
+  # Backend API + Worker (Combined for Free Tier)
   - type: web
     name: acd-backend
     runtime: python
-    rootDir: backend
+    rootDir: .
     buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    startCommand: bash start.sh
     envVars:
       - key: REDIS_URL
         fromService:
@@ -16,20 +16,6 @@ services:
         sync: false
       - key: GOOGLE_API_KEY
         sync: false
-    
-  # Celery Worker
-  - type: worker
-    name: acd-worker
-    runtime: python
-    rootDir: worker
-    buildCommand: pip install -r requirements.txt
-    startCommand: celery -A tasks worker --loglevel=info
-    envVars:
-      - key: REDIS_URL
-        fromService:
-          type: redis
-          name: acd-redis
-          property: connectionString
       - key: AGENT_URL
         fromService:
           type: web
@@ -50,9 +36,9 @@ services:
   - type: web
     name: acd-agent
     runtime: python
-    rootDir: agent
+    rootDir: .
     buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    startCommand: uvicorn agent.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: OPENAI_API_KEY
         sync: false
