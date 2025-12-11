@@ -20,6 +20,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Local Storage Setup (for non-AWS deployment)
+STORAGE_DIR = "/tmp/storage"
+os.makedirs(STORAGE_DIR, exist_ok=True)
+from fastapi.staticfiles import StaticFiles
+app.mount("/files", StaticFiles(directory=STORAGE_DIR), name="files")
+
 # Redis Connection
 redis_url = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 r = redis.from_url(redis_url, decode_responses=True)

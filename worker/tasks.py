@@ -126,8 +126,25 @@ def generate_docs_site_task(job_id, docs_content, repo_path):
     return f"{zip_base}.zip"
 
 def upload_to_s3_task(job_id, zip_path):
-    update_status(job_id, "uploading", "Uploading to storage...")
+    update_status(job_id, "uploading", "Finalizing documentation...")
     
+    # Check if we have S3 credentials
+    if not MINIO_ACCESS_KEY or not MINIO_SECRET_KEY:
+        # Fallback to Local Storage (Ephemeral)
+        file_name = f"docs_{job_id}.zip"
+        storage_dir = "/tmp/storage"
+        os.makedirs(storage_dir, exist_ok=True)
+        target_path = os.path.join(storage_dir, file_name)
+        
+        # Move zip to storage dir
+        shutil.move(zip_path, target_path)
+        
+        # Construct download URL
+        # In Render, RENDER_EXTERNAL_URL is set automatically
+        base_url = os.getenv("RENDER_EXTERNAL_URL", "http://localhost:8000")
+        return f"{base_url}/files/{file_name}"
+
+    # S3 Upload Logic
     from botocore.client import Config
     
     # Use localhost endpoint for URL generation so presigned URLs work from browser

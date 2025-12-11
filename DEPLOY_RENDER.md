@@ -60,10 +60,6 @@ If you prefer to set up services manually instead of using the Blueprint:
 4. **Environment Variables** (Click "Add Environment Variable"):
    - `REDIS_URL`: (Paste Internal Redis URL from Step 1)
    - `GOOGLE_API_KEY`: Your Gemini API Key
-   - `AWS_ACCESS_KEY_ID`: Your AWS Access Key
-   - `AWS_SECRET_ACCESS_KEY`: Your AWS Secret Key
-   - `AWS_BUCKET_NAME`: Your S3 Bucket Name
-   - `AWS_REGION`: `us-east-1`
    - `AGENT_URL`: (Leave blank for now, update after deploying Agent)
 5. Click **Create Web Service**
 
